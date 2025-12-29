@@ -287,18 +287,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Built with [Rust](https://www.rust-lang.org/) and [clap](https://github.com/clap-rs/clap)
 - Follows the [Keep a Changelog](https://keepachangelog.com/) format
 
-## 🗺️ Roadmap
-
-- [x] Core project/milestone/issue management
-- [x] Comments system
-- [x] Configurable base directory
-- [ ] Subtasks/checklists
-- [ ] Time tracking
-- [ ] Custom fields
-- [ ] Git integration (auto-link commits)
-- [ ] Export to various formats (JSON, CSV)
-- [ ] Web UI (optional)
-
 ## 📊 Why Pillar?
 
 **Git-Friendly**: All your tasks are in plain text files that can be versioned with Git. No more losing task history or dealing with database backups.
@@ -329,6 +317,3 @@ If you find Pillar useful, please consider:
 - Contributing to the project
 - Reporting bugs or suggesting features
 
----
-
-Made with ❤️ by the Pillar community
