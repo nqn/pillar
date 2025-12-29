@@ -1,5 +1,6 @@
 [workspace]
 version = "0.1.0"
+base_directory = "pm"
 
 [defaults]
 priority = "medium"
