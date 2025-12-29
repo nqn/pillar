@@ -1,12 +1,12 @@
 ---
 title: Add tag support for issues
-status: todo
+status: completed
 priority: low
 project: Future Enhancements
 milestone: v0.2.0
 tags: []
 created: 2025-12-29T20:03:10.855018Z
-updated: 2025-12-29T20:03:10.855018Z
+updated: 2025-12-29T20:11:53.876476Z
 ---
 
 # Add tag support for issues

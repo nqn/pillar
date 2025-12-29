@@ -6,7 +6,7 @@ project: Future Enhancements
 milestone: v0.2.0
 tags: []
 created: 2025-12-29T20:03:10.860728Z
-updated: 2025-12-29T20:03:10.860728Z
+updated: 2025-12-29T20:12:10.410052Z
 ---
 
 # Add search and filter capabilities

@@ -1,8 +1,10 @@
 pub mod comment;
+pub mod export;
 pub mod init;
 pub mod issue;
 pub mod milestone;
 pub mod project;
+pub mod search;
 pub mod view;
 
 pub use init::init;

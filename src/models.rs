@@ -115,10 +115,11 @@ pub struct ProjectMetadata {
 }
 
 /// A project with its content and location
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Project {
     pub metadata: ProjectMetadata,
     pub description: String,
+    #[serde(skip)]
     pub path: PathBuf,
 }
 
@@ -137,10 +138,11 @@ pub struct MilestoneMetadata {
 }
 
 /// A milestone with its content and location
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Milestone {
     pub metadata: MilestoneMetadata,
     pub description: String,
+    #[serde(skip)]
     pub path: PathBuf,
 }
 
@@ -163,10 +165,11 @@ pub struct IssueMetadata {
 }
 
 /// An issue with its content and location
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Issue {
     pub metadata: IssueMetadata,
     pub description: String,
+    #[serde(skip)]
     pub path: PathBuf,
 }
 

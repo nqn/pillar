@@ -42,6 +42,31 @@ pub enum Commands {
         /// Optional project name to filter by
         project: Option<String>,
     },
+    
+    /// Search across all entities
+    Search {
+        /// Search query
+        query: String,
+        
+        /// Entity type to search (project, milestone, issue, or all)
+        #[arg(short, long, default_value = "all")]
+        entity_type: String,
+    },
+    
+    /// Export data to various formats
+    Export {
+        /// Export format (json or csv)
+        #[arg(short, long, default_value = "json")]
+        format: String,
+        
+        /// Entity type to export (project, milestone, issue, or all)
+        #[arg(short = 't', long, default_value = "all")]
+        entity_type: String,
+        
+        /// Output file (defaults to stdout)
+        #[arg(short, long)]
+        output: Option<String>,
+    },
 }
 
 #[derive(Subcommand)]

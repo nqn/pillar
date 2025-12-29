@@ -74,6 +74,12 @@ fn main() -> Result<()> {
         Commands::Board { project } => {
             commands::board(project.as_deref())?;
         }
+        Commands::Search { query, entity_type } => {
+            commands::search::search(&query, &entity_type)?;
+        }
+        Commands::Export { format, entity_type, output } => {
+            commands::export::export(&format, &entity_type, output.as_deref())?;
+        }
     }
 
     Ok(())
