@@ -4,7 +4,7 @@ use std::str::FromStr;
 
 use crate::fs::{ensure_dir, get_base_directory, list_projects as list_all};
 use crate::models::{Priority, ProjectMetadata, Status};
-use crate::parser::{read_project, write_with_frontmatter};
+use crate::parser::write_with_frontmatter;
 
 pub fn create_project(name: &str, priority: &str) -> Result<()> {
     let base_dir = get_base_directory()?;
@@ -214,6 +214,7 @@ fn format_priority(priority: &Priority) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parser::read_project;
     use std::env;
     use tempfile::TempDir;
 
