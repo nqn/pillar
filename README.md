@@ -4,7 +4,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/pillar-cli.svg)](https://crates.io/crates/pillar-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://github.com/yourusername/pillar/workflows/CI/badge.svg)](https://github.com/yourusername/pillar/actions)
+[![Build Status](https://github.com/yourusernnqname/pillar/workflows/CI/badge.svg)](https://github.com/nqn/pillar/actions)
 
 Pillar is a command-line task tracker that uses plain text files (Markdown with YAML frontmatter) to manage your projects, milestones, and issues. Perfect for developers who want to track work without leaving the terminal or dealing with complex web interfaces.
 
