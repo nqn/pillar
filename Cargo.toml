@@ -1,0 +1,37 @@
+[package]
+name = "pillar-cli"
+version = "0.1.0"
+edition = "2021"
+authors = ["Pillar Contributors"]
+description = "A file-based task tracker for managing projects, milestones, and issues"
+documentation = "https://github.com/yourusername/pillar"
+homepage = "https://github.com/yourusername/pillar"
+repository = "https://github.com/yourusername/pillar"
+readme = "README.md"
+license = "MIT"
+keywords = ["task", "project-management", "cli", "productivity", "markdown"]
+categories = ["command-line-utilities", "development-tools"]
+exclude = [
+    "tests/fixtures/*",
+    ".github/*",
+]
+
+[[bin]]
+name = "pillar"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.5", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9"
+toml = "0.8"
+chrono = { version = "0.4", features = ["serde"] }
+anyhow = "1.0"
+colored = "2.1"
+walkdir = "2.4"
+uuid = { version = "1.6", features = ["v4"] }
+
+[dev-dependencies]
+tempfile = "3.8"
+assert_cmd = "2.0"
+predicates = "3.0"
