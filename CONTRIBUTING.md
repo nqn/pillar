@@ -269,7 +269,7 @@ Releases are managed by maintainers:
 
 ## Questions?
 
-- Open a [GitHub Discussion](https://github.com/yourusername/pillar/discussions)
+- Open a [GitHub Discussion](https://github.com/nqn/pillar/discussions)
 - Comment on related issues
 - Reach out to maintainers
 

@@ -264,7 +264,7 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for det
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/pillar.git
+git clone https://github.com/nqn/pillar.git
 cd pillar
 
 # Run tests (single-threaded to avoid race conditions)
@@ -307,7 +307,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🐛 Bug Reports & Feature Requests
 
-Found a bug? Have an idea for a feature? Please [open an issue](https://github.com/yourusername/pillar/issues/new)!
+Found a bug? Have an idea for a feature? Please [open an issue](https://github.com/nqn/pillar/issues/new)!
 
 ## ⭐ Show Your Support
 

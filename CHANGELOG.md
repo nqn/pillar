@@ -40,5 +40,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive README
 - Contributing guidelines
 
-[Unreleased]: https://github.com/yourusername/pillar/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/yourusername/pillar/releases/tag/v0.1.0
+[Unreleased]: https://github.com/nqn/pillar/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/nqn/pillar/releases/tag/v0.1.0

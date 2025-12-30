@@ -54,9 +54,9 @@
 
 ### 1. Create GitHub Repository
 ```bash
-# Create a new repository on GitHub (e.g., github.com/yourusername/pillar)
+# Create a new repository on GitHub (e.g., github.com/nqn/pillar)
 # Then push your local repository:
-git remote add origin https://github.com/yourusername/pillar.git
+git remote add origin https://github.com/nqn/pillar.git
 git push -u origin master
 git push --tags
 ```
