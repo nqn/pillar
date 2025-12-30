@@ -51,6 +51,9 @@ Feature suggestions are welcome! Please:
 git clone https://github.com/YOUR_USERNAME/pillar.git
 cd pillar
 
+# Set up git hooks (automatic formatting checks)
+./hooks/setup.sh
+
 # Create a branch for your work
 git checkout -b feature/my-feature
 
@@ -87,10 +90,19 @@ pillar/
 
 ## Coding Standards
 
+### Git Hooks
+
+The repository includes a pre-commit hook that automatically checks code formatting:
+
+- Run `./hooks/setup.sh` to install the hooks
+- The hook runs `cargo fmt --check` before each commit
+- If formatting is needed, it will auto-format and ask you to review
+- To bypass (not recommended): `git commit --no-verify`
+
 ### Rust Style
 
 - Follow the official [Rust Style Guide](https://doc.rust-lang.org/nightly/style-guide/)
-- Run `cargo fmt` before committing
+- Run `cargo fmt` before committing (automated by pre-commit hook)
 - Run `cargo clippy` and address warnings
 - Keep functions small and focused
 - Use meaningful variable names
