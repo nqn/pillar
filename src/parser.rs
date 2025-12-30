@@ -12,9 +12,11 @@ where
     T: serde::de::DeserializeOwned,
 {
     let content = content.trim();
-    
+
     if !content.starts_with("---") {
-        return Err(anyhow::anyhow!("File does not start with frontmatter delimiter"));
+        return Err(anyhow::anyhow!(
+            "File does not start with frontmatter delimiter"
+        ));
     }
 
     let rest = &content[3..];
@@ -25,8 +27,8 @@ where
     let frontmatter = &rest[..end_pos];
     let body = &rest[end_pos + 4..].trim();
 
-    let metadata: T = serde_yaml::from_str(frontmatter)
-        .context("Failed to parse frontmatter YAML")?;
+    let metadata: T =
+        serde_yaml::from_str(frontmatter).context("Failed to parse frontmatter YAML")?;
 
     Ok((metadata, body.to_string()))
 }
@@ -70,8 +72,8 @@ pub fn read_issue<P: AsRef<Path>>(path: P) -> Result<Issue> {
     let content = fs::read_to_string(path)
         .with_context(|| format!("Failed to read issue file: {}", path.display()))?;
 
-    let (metadata, description) = parse_frontmatter::<IssueMetadata>(&content)
-        .context("Failed to parse issue metadata")?;
+    let (metadata, description) =
+        parse_frontmatter::<IssueMetadata>(&content).context("Failed to parse issue metadata")?;
 
     Ok(Issue {
         metadata,
@@ -86,14 +88,13 @@ where
     T: serde::Serialize,
     P: AsRef<Path>,
 {
-    let frontmatter = serde_yaml::to_string(metadata)
-        .context("Failed to serialize metadata")?;
-    
+    let frontmatter = serde_yaml::to_string(metadata).context("Failed to serialize metadata")?;
+
     let content = format!("---\n{}---\n\n{}", frontmatter, body.trim());
-    
+
     fs::write(path.as_ref(), content)
         .with_context(|| format!("Failed to write file: {}", path.as_ref().display()))?;
-    
+
     Ok(())
 }
 
@@ -103,7 +104,7 @@ where
 /// comment content
 pub fn read_comments(body: &str) -> Vec<Comment> {
     let mut comments = Vec::new();
-    
+
     // Find the ## Comments section
     let comments_section = if let Some(pos) = body.find("\n## Comments\n") {
         &body[pos + 13..] // Skip "\n## Comments\n"
@@ -112,11 +113,11 @@ pub fn read_comments(body: &str) -> Vec<Comment> {
     } else {
         return comments;
     };
-    
+
     // Split by ### headings
     let mut current_comment: Option<Comment> = None;
     let mut content_lines = Vec::new();
-    
+
     for line in comments_section.lines() {
         if line.starts_with("### [") {
             // Save previous comment if any
@@ -125,18 +126,18 @@ pub fn read_comments(body: &str) -> Vec<Comment> {
                 comments.push(comment);
                 content_lines.clear();
             }
-            
+
             // Parse new comment header: ### [timestamp] - author
             if let Some(close_bracket) = line.find(']') {
                 let timestamp = line[5..close_bracket].to_string(); // Skip "### ["
                 let rest = &line[close_bracket + 1..];
-                
+
                 let author = if let Some(dash_pos) = rest.find(" - ") {
                     rest[dash_pos + 3..].trim().to_string()
                 } else {
                     "Unknown".to_string()
                 };
-                
+
                 current_comment = Some(Comment {
                     id: uuid::Uuid::new_v4().to_string(), // Generate new ID on read
                     author,
@@ -152,13 +153,13 @@ pub fn read_comments(body: &str) -> Vec<Comment> {
             content_lines.push(line);
         }
     }
-    
+
     // Save last comment if any
     if let Some(mut comment) = current_comment {
         comment.content = content_lines.join("\n").trim().to_string();
         comments.push(comment);
     }
-    
+
     comments
 }
 
@@ -173,20 +174,23 @@ pub fn write_comments(body: &str, comments: &[Comment]) -> String {
     } else {
         body.trim_end()
     };
-    
+
     if comments.is_empty() {
         return body_without_comments.to_string();
     }
-    
+
     let mut result = body_without_comments.to_string();
     result.push_str("\n\n## Comments\n");
-    
+
     for comment in comments {
-        result.push_str(&format!("\n### [{}] - {}\n", comment.timestamp, comment.author));
+        result.push_str(&format!(
+            "\n### [{}] - {}\n",
+            comment.timestamp, comment.author
+        ));
         result.push_str(&comment.content);
         result.push('\n');
     }
-    
+
     result
 }
 
@@ -210,7 +214,7 @@ This is the issue description.
 
         let result: Result<(IssueMetadata, String)> = parse_frontmatter(content);
         assert!(result.is_ok());
-        
+
         let (metadata, body) = result.unwrap();
         assert_eq!(metadata.title, "Test Issue");
         assert_eq!(metadata.status, Status::Todo);
@@ -241,7 +245,7 @@ Body
     #[test]
     fn test_write_with_frontmatter() -> Result<()> {
         let temp_file = NamedTempFile::new()?;
-        
+
         let metadata = IssueMetadata {
             title: "Test".to_string(),
             status: Status::Todo,
@@ -266,7 +270,7 @@ Body
     #[test]
     fn test_read_write_roundtrip() -> Result<()> {
         let temp_file = NamedTempFile::new()?;
-        
+
         let original_metadata = IssueMetadata {
             title: "Roundtrip Test".to_string(),
             status: Status::InProgress,
@@ -281,9 +285,9 @@ Body
         let body = "This is a test issue.\n\nWith multiple lines.";
 
         write_with_frontmatter(temp_file.path(), &original_metadata, body)?;
-        
+
         let issue = read_issue(temp_file.path())?;
-        
+
         assert_eq!(issue.metadata.title, original_metadata.title);
         assert_eq!(issue.metadata.status, original_metadata.status);
         assert_eq!(issue.metadata.priority, original_metadata.priority);
@@ -351,14 +355,12 @@ Third comment
     #[test]
     fn test_write_comments_adds_section() {
         let body = "# Issue Description\n\nSome content.";
-        let comments = vec![
-            Comment {
-                id: "1".to_string(),
-                author: "Alice".to_string(),
-                timestamp: "2025-12-29T10:30:00Z".to_string(),
-                content: "Test comment".to_string(),
-            },
-        ];
+        let comments = vec![Comment {
+            id: "1".to_string(),
+            author: "Alice".to_string(),
+            timestamp: "2025-12-29T10:30:00Z".to_string(),
+            content: "Test comment".to_string(),
+        }];
         let result = write_comments(body, &comments);
         assert!(result.contains("## Comments"));
         assert!(result.contains("### [2025-12-29T10:30:00Z] - Alice"));
@@ -374,14 +376,12 @@ Third comment
 ### [2025-12-29T10:00:00Z] - OldUser
 Old comment
 "#;
-        let comments = vec![
-            Comment {
-                id: "2".to_string(),
-                author: "NewUser".to_string(),
-                timestamp: "2025-12-29T11:00:00Z".to_string(),
-                content: "New comment".to_string(),
-            },
-        ];
+        let comments = vec![Comment {
+            id: "2".to_string(),
+            author: "NewUser".to_string(),
+            timestamp: "2025-12-29T11:00:00Z".to_string(),
+            content: "New comment".to_string(),
+        }];
         let result = write_comments(body, &comments);
         assert!(!result.contains("OldUser"));
         assert!(result.contains("NewUser"));

@@ -25,46 +25,98 @@ fn main() -> Result<()> {
             ProjectCommands::Show { name } => {
                 commands::show_project(&name)?;
             }
-            ProjectCommands::Edit { name, status, priority } => {
+            ProjectCommands::Edit {
+                name,
+                status,
+                priority,
+            } => {
                 commands::edit_project(&name, status.as_deref(), priority.as_deref())?;
             }
         },
         Commands::Milestone(cmd) => match cmd {
-            MilestoneCommands::Create { project, title, date } => {
+            MilestoneCommands::Create {
+                project,
+                title,
+                date,
+            } => {
                 commands::create_milestone(&project, &title, date.as_deref())?;
             }
             MilestoneCommands::List { project } => {
                 commands::list_milestones(project.as_deref())?;
             }
-            MilestoneCommands::Edit { project, title, status, date } => {
+            MilestoneCommands::Edit {
+                project,
+                title,
+                status,
+                date,
+            } => {
                 commands::edit_milestone(&project, &title, status.as_deref(), date.as_deref())?;
             }
         },
         Commands::Issue(cmd) => match cmd {
-            IssueCommands::Create { project, title, priority, milestone, tags } => {
-                commands::create_issue(&project, &title, &priority, milestone.as_deref(), tags.as_deref())?;
+            IssueCommands::Create {
+                project,
+                title,
+                priority,
+                milestone,
+                tags,
+            } => {
+                commands::create_issue(
+                    &project,
+                    &title,
+                    &priority,
+                    milestone.as_deref(),
+                    tags.as_deref(),
+                )?;
             }
-            IssueCommands::List { status, priority, project, milestone, tag } => {
+            IssueCommands::List {
+                status,
+                priority,
+                project,
+                milestone,
+                tag,
+            } => {
                 commands::list_issues(
                     status.as_deref(),
                     priority.as_deref(),
                     project.as_deref(),
                     milestone.as_deref(),
-                    tag.as_deref()
+                    tag.as_deref(),
                 )?;
             }
             IssueCommands::Show { id } => {
                 commands::show_issue(&id)?;
             }
-            IssueCommands::Edit { id, status, priority, milestone, tags } => {
-                commands::edit_issue(&id, status.as_deref(), priority.as_deref(), milestone.as_deref(), tags.as_deref())?;
+            IssueCommands::Edit {
+                id,
+                status,
+                priority,
+                milestone,
+                tags,
+            } => {
+                commands::edit_issue(
+                    &id,
+                    status.as_deref(),
+                    priority.as_deref(),
+                    milestone.as_deref(),
+                    tags.as_deref(),
+                )?;
             }
         },
         Commands::Comment(cmd) => match cmd {
-            CommentCommands::Add { entity_type, project, content, identifier } => {
+            CommentCommands::Add {
+                entity_type,
+                project,
+                content,
+                identifier,
+            } => {
                 commands::comment::add(&entity_type, &project, identifier.as_deref(), &content)?;
             }
-            CommentCommands::List { entity_type, project, identifier } => {
+            CommentCommands::List {
+                entity_type,
+                project,
+                identifier,
+            } => {
                 commands::comment::list(&entity_type, &project, identifier.as_deref())?;
             }
         },
@@ -77,7 +129,11 @@ fn main() -> Result<()> {
         Commands::Search { query, entity_type } => {
             commands::search::search(&query, &entity_type)?;
         }
-        Commands::Export { format, entity_type, output } => {
+        Commands::Export {
+            format,
+            entity_type,
+            output,
+        } => {
             commands::export::export(&format, &entity_type, output.as_deref())?;
         }
     }

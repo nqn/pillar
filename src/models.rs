@@ -213,7 +213,6 @@ mod tests {
     }
 
     #[test]
-
     #[test]
     fn test_config_default_base_directory() {
         let config = WorkspaceConfig {
