@@ -107,8 +107,8 @@ pub fn read_comments(body: &str) -> Vec<Comment> {
     // Find the ## Comments section
     let comments_section = if let Some(pos) = body.find("\n## Comments\n") {
         &body[pos + 13..] // Skip "\n## Comments\n"
-    } else if body.starts_with("## Comments\n") {
-        &body[12..] // Skip "## Comments\n"
+    } else if let Some(stripped) = body.strip_prefix("## Comments\n") {
+        stripped
     } else {
         return comments;
     };

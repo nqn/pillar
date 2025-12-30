@@ -137,7 +137,7 @@ pub fn list_milestones<P: AsRef<Path>>(project_path: P) -> Result<Vec<Milestone>
         .filter_map(|e| e.ok())
     {
         let path = entry.path();
-        if path.is_file() && path.extension().map_or(false, |ext| ext == "md") {
+        if path.is_file() && path.extension().is_some_and(|ext| ext == "md") {
             match read_milestone(path) {
                 Ok(milestone) => milestones.push(milestone),
                 Err(e) => eprintln!("Warning: Failed to read milestone at {}: {}", path.display(), e),
@@ -164,7 +164,7 @@ pub fn list_issues<P: AsRef<Path>>(project_path: P) -> Result<Vec<Issue>> {
         .filter_map(|e| e.ok())
     {
         let path = entry.path();
-        if path.is_file() && path.extension().map_or(false, |ext| ext == "md") {
+        if path.is_file() && path.extension().is_some_and(|ext| ext == "md") {
             match read_issue(path) {
                 Ok(issue) => issues.push(issue),
                 Err(e) => eprintln!("Warning: Failed to read issue at {}: {}", path.display(), e),
