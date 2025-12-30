@@ -14,11 +14,11 @@ pub fn create_issue(
     tags: Option<&str>,
 ) -> Result<()> {
     let base_dir = get_base_directory()?;
-    let project_path = base_dir.join(project_name);
 
-    if !project_path.exists() {
-        return Err(anyhow::anyhow!("Project '{}' does not exist", project_name));
-    }
+    // Find project by name or ID
+    let project = crate::fs::find_project(&base_dir, project_name)?;
+    let project_path = project.path;
+    let actual_project_name = project.metadata.name;
 
     let issues_dir = project_path.join("issues");
     ensure_dir(&issues_dir)?;
@@ -44,7 +44,7 @@ pub fn create_issue(
         title: title.to_string(),
         status: Status::Todo,
         priority,
-        project: Some(project_name.to_string()),
+        project: Some(actual_project_name.clone()),
         milestone: milestone.map(|s| s.to_string()),
         tags: tag_list,
         created: Some(Utc::now()),
@@ -60,7 +60,7 @@ pub fn create_issue(
 
     println!(
         "✓ Created issue '{}/{}' - {}",
-        project_name, issue_id, title
+        actual_project_name, issue_id, title
     );
     if let Some(m) = milestone {
         println!("  Milestone: {}", m);
@@ -333,7 +333,7 @@ mod tests {
 
         env::set_current_dir(temp_dir.path())?;
         crate::commands::init(None)?;
-        crate::commands::create_project("test-project", "medium")?;
+        crate::commands::create_project("test-project", None, "medium")?;
         env::set_current_dir(&original_dir)?;
 
         Ok((temp_dir, "test-project".to_string()))

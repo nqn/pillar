@@ -156,7 +156,7 @@ mod tests {
         init(None)?;
 
         // Create test data
-        crate::commands::project::create_project("TestProject", "high")?;
+        crate::commands::project::create_project("TestProject", None, "high")?;
         crate::commands::issue::create_issue(
             "TestProject",
             "Fix bug in search",

@@ -206,7 +206,7 @@ mod tests {
 
         env::set_current_dir(temp_dir.path())?;
         init(None)?;
-        project::create_project("TestProject", "medium")?;
+        project::create_project("TestProject", None, "medium")?;
 
         let result = add("project", "TestProject", None, "This is a test comment");
 
@@ -230,7 +230,7 @@ mod tests {
 
         env::set_current_dir(temp_dir.path())?;
         init(None)?;
-        project::create_project("TestProject", "medium")?;
+        project::create_project("TestProject", None, "medium")?;
         issue::create_issue("TestProject", "Test Issue", "medium", None, None)?;
 
         let result = add("issue", "TestProject", Some("1"), "Issue comment");
@@ -256,7 +256,7 @@ mod tests {
 
         env::set_current_dir(temp_dir.path())?;
         init(None)?;
-        project::create_project("TestProject", "medium")?;
+        project::create_project("TestProject", None, "medium")?;
 
         let result = list("project", "TestProject", None);
 
@@ -274,7 +274,7 @@ mod tests {
 
         env::set_current_dir(temp_dir.path())?;
         init(None)?;
-        project::create_project("TestProject", "medium")?;
+        project::create_project("TestProject", None, "medium")?;
         add("project", "TestProject", None, "First comment")?;
         add("project", "TestProject", None, "Second comment")?;
 

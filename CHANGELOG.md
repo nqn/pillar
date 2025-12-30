@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2025-12-30
+
+### Added
+- Project ID / short mnemonic feature for easier command usage
+  - Optional `--id` flag when creating projects for custom short IDs
+  - Auto-generated project IDs from project names (acronyms or first 4 chars)
+  - All issue, milestone, and comment commands accept project IDs
+  - Project IDs displayed in list and show commands
+- Full backward compatibility with existing projects without IDs
+
+### Changed
+- `find_project` function now accepts either full project name or project ID
+- Enhanced display output to show project IDs where available
+
 ## [0.1.1] - 2025-12-30
 
 ### Added

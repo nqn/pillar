@@ -6,13 +6,33 @@ use crate::fs::{ensure_dir, get_base_directory, list_projects as list_all};
 use crate::models::{Priority, ProjectMetadata, Status};
 use crate::parser::write_with_frontmatter;
 
-pub fn create_project(name: &str, priority: &str) -> Result<()> {
+pub fn create_project(name: &str, project_id: Option<&str>, priority: &str) -> Result<()> {
     let base_dir = get_base_directory()?;
     let project_path = base_dir.join(name);
 
     if project_path.exists() {
         return Err(anyhow::anyhow!("Project '{}' already exists", name));
     }
+
+    // Validate and process project_id
+    let project_id = if let Some(id) = project_id {
+        validate_project_id(id)?;
+        // Check if project_id is already in use
+        let all_projects = list_all(&base_dir)?;
+        if all_projects
+            .iter()
+            .any(|p| p.metadata.project_id.as_deref() == Some(id))
+        {
+            return Err(anyhow::anyhow!(
+                "Project ID '{}' is already in use by another project",
+                id
+            ));
+        }
+        Some(id.to_string())
+    } else {
+        // Generate default project_id from name (first 3-4 chars as acronym)
+        Some(generate_default_project_id(name))
+    };
 
     // Create project directory structure
     ensure_dir(&project_path)?;
@@ -26,6 +46,7 @@ pub fn create_project(name: &str, priority: &str) -> Result<()> {
     // Create project metadata
     let metadata = ProjectMetadata {
         name: name.to_string(),
+        project_id,
         status: Status::Backlog,
         priority,
         created: Some(Utc::now()),
@@ -39,12 +60,57 @@ pub fn create_project(name: &str, priority: &str) -> Result<()> {
     );
     write_with_frontmatter(project_path.join("README.md"), &metadata, &description)?;
 
-    println!("✓ Created project '{}' at {}", name, project_path.display());
+    let id_display = metadata.project_id.as_ref().unwrap();
+    println!(
+        "✓ Created project '{}' (ID: {}) at {}",
+        name,
+        id_display,
+        project_path.display()
+    );
     println!("\nNext steps:");
-    println!("  pillar milestone create {} <milestone-name>", name);
-    println!("  pillar issue create {} <issue-title>", name);
+    println!("  pillar milestone create {} <milestone-name>", id_display);
+    println!("  pillar issue create {} <issue-title>", id_display);
 
     Ok(())
+}
+
+/// Validate that a project_id contains only alphanumeric characters and hyphens
+fn validate_project_id(id: &str) -> Result<()> {
+    if id.is_empty() {
+        return Err(anyhow::anyhow!("Project ID cannot be empty"));
+    }
+    if id.len() > 20 {
+        return Err(anyhow::anyhow!("Project ID must be 20 characters or less"));
+    }
+    if !id
+        .chars()
+        .all(|c| c.is_alphanumeric() || c == '-' || c == '_')
+    {
+        return Err(anyhow::anyhow!(
+            "Project ID can only contain alphanumeric characters, hyphens, and underscores"
+        ));
+    }
+    Ok(())
+}
+
+/// Generate a default project_id from the project name
+fn generate_default_project_id(name: &str) -> String {
+    // Take first letter of each word, or first 4 chars if single word
+    let words: Vec<&str> = name.split(&[' ', '-', '_'][..]).collect();
+
+    if words.len() > 1 {
+        // Multi-word: take first letter of each word
+        words
+            .iter()
+            .filter(|w| !w.is_empty())
+            .take(4)
+            .map(|w| w.chars().next().unwrap())
+            .collect::<String>()
+            .to_lowercase()
+    } else {
+        // Single word: take first 3-4 characters
+        name.chars().take(4).collect::<String>().to_lowercase()
+    }
 }
 
 pub fn list_projects(status_filter: Option<&str>, priority_filter: Option<&str>) -> Result<()> {
@@ -91,9 +157,16 @@ pub fn list_projects(status_filter: Option<&str>, priority_filter: Option<&str>)
         let issues = crate::fs::list_issues(&project.path).unwrap_or_default();
         let milestones = crate::fs::list_milestones(&project.path).unwrap_or_default();
 
+        let id_display = if let Some(id) = &project.metadata.project_id {
+            format!(" ({})", id)
+        } else {
+            String::new()
+        };
+
         println!(
-            "  {} [{}] [{}]",
+            "  {}{} [{}] [{}]",
             project.metadata.name,
+            id_display,
             format_status(&project.metadata.status),
             format_priority(&project.metadata.priority)
         );
@@ -114,7 +187,13 @@ pub fn show_project(name: &str) -> Result<()> {
     let milestones = crate::fs::list_milestones(&project.path)?;
     let issues = crate::fs::list_issues(&project.path)?;
 
-    println!("Project: {}", project.metadata.name);
+    let id_display = if let Some(id) = &project.metadata.project_id {
+        format!(" (ID: {})", id)
+    } else {
+        String::new()
+    };
+
+    println!("Project: {}{}", project.metadata.name, id_display);
     println!("Status: {}", format_status(&project.metadata.status));
     println!("Priority: {}", format_priority(&project.metadata.priority));
     println!("\n{}", project.description);
@@ -267,7 +346,7 @@ mod tests {
         let original_dir = env::current_dir()?;
 
         env::set_current_dir(temp_dir.path())?;
-        let create_result = create_project("test-project", "high");
+        let create_result = create_project("test-project", None, "high");
         env::set_current_dir(&original_dir)?;
 
         create_result?;
@@ -283,6 +362,7 @@ mod tests {
         assert_eq!(project.metadata.name, "test-project");
         assert_eq!(project.metadata.priority, Priority::High);
         assert_eq!(project.metadata.status, Status::Backlog);
+        assert!(project.metadata.project_id.is_some());
 
         Ok(())
     }
@@ -293,8 +373,8 @@ mod tests {
         let original_dir = env::current_dir()?;
 
         env::set_current_dir(temp_dir.path())?;
-        let _ = create_project("test-project", "medium");
-        let result = create_project("test-project", "medium");
+        let _ = create_project("test-project", None, "medium");
+        let result = create_project("test-project", None, "medium");
         env::set_current_dir(&original_dir)?;
 
         assert!(result.is_err());
@@ -308,7 +388,7 @@ mod tests {
         let original_dir = env::current_dir()?;
 
         env::set_current_dir(temp_dir.path())?;
-        let _ = create_project("test-project", "medium");
+        let _ = create_project("test-project", None, "medium");
         let edit_result = edit_project("test-project", Some("in-progress"), Some("urgent"));
         env::set_current_dir(&original_dir)?;
 

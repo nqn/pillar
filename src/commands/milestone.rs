@@ -8,11 +8,11 @@ use crate::parser::write_with_frontmatter;
 
 pub fn create_milestone(project_name: &str, title: &str, date: Option<&str>) -> Result<()> {
     let base_dir = get_base_directory()?;
-    let project_path = base_dir.join(project_name);
 
-    if !project_path.exists() {
-        return Err(anyhow::anyhow!("Project '{}' does not exist", project_name));
-    }
+    // Find project by name or ID
+    let project = crate::fs::find_project(&base_dir, project_name)?;
+    let project_path = project.path;
+    let actual_project_name = project.metadata.name;
 
     let milestones_dir = project_path.join("milestones");
     ensure_dir(&milestones_dir)?;
@@ -30,7 +30,7 @@ pub fn create_milestone(project_name: &str, title: &str, date: Option<&str>) -> 
         title: title.to_string(),
         status: Status::Backlog,
         target_date: date.map(|s| s.to_string()),
-        project: Some(project_name.to_string()),
+        project: Some(actual_project_name.clone()),
         created: Some(Utc::now()),
         updated: Some(Utc::now()),
     };
@@ -41,7 +41,7 @@ pub fn create_milestone(project_name: &str, title: &str, date: Option<&str>) -> 
 
     println!(
         "✓ Created milestone '{}' in project '{}'",
-        title, project_name
+        title, actual_project_name
     );
     if let Some(d) = date {
         println!("  Target date: {}", d);
@@ -107,11 +107,10 @@ pub fn edit_milestone(
     date: Option<&str>,
 ) -> Result<()> {
     let base_dir = get_base_directory()?;
-    let project_path = base_dir.join(project_name);
 
-    if !project_path.exists() {
-        return Err(anyhow::anyhow!("Project '{}' does not exist", project_name));
-    }
+    // Find project by name or ID
+    let project = crate::fs::find_project(&base_dir, project_name)?;
+    let project_path = project.path;
 
     // Find the milestone by title
     let milestones = crate::fs::list_milestones(&project_path)?;
@@ -184,7 +183,7 @@ mod tests {
 
         env::set_current_dir(temp_dir.path())?;
         crate::commands::init(None)?;
-        crate::commands::create_project("test-project", "medium")?;
+        crate::commands::create_project("test-project", None, "medium")?;
         env::set_current_dir(&original_dir)?;
 
         Ok((temp_dir, "test-project".to_string()))

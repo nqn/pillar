@@ -218,7 +218,7 @@ mod tests {
 
         env::set_current_dir(temp_dir.path())?;
         crate::commands::init(None)?;
-        crate::commands::create_project("project-a", "high")?;
+        crate::commands::create_project("project-a", None, "high")?;
         crate::commands::create_issue("project-a", "Issue 1", "high", None, None)?;
         crate::commands::create_issue("project-a", "Issue 2", "medium", None, None)?;
         crate::commands::edit_issue("project-a/001", Some("in-progress"), None, None, None)?;

@@ -191,7 +191,7 @@ mod tests {
         env::set_current_dir(temp_dir.path())?;
         init(None)?;
 
-        crate::commands::project::create_project("TestProject", "high")?;
+        crate::commands::project::create_project("TestProject", None, "high")?;
 
         let result = export("json", "project", None);
 

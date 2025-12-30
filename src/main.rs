@@ -16,8 +16,8 @@ fn main() -> Result<()> {
             commands::init(base_directory.as_deref())?;
         }
         Commands::Project(cmd) => match cmd {
-            ProjectCommands::Create { name, priority } => {
-                commands::create_project(&name, &priority)?;
+            ProjectCommands::Create { name, id, priority } => {
+                commands::create_project(&name, id.as_deref(), &priority)?;
             }
             ProjectCommands::List { status, priority } => {
                 commands::list_projects(status.as_deref(), priority.as_deref())?;

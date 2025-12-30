@@ -76,6 +76,10 @@ pub enum ProjectCommands {
         /// Name of the project
         name: String,
 
+        /// Short project ID/mnemonic for easier command usage
+        #[arg(long)]
+        id: Option<String>,
+
         /// Priority (low, medium, high, urgent)
         #[arg(short, long, default_value = "medium")]
         priority: String,

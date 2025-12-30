@@ -1,6 +1,6 @@
 [package]
 name = "pillar-cli"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["Pillar Contributors"]
 description = "A file-based task tracker for managing projects, milestones, and issues"

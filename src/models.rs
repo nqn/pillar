@@ -106,6 +106,8 @@ impl std::str::FromStr for Priority {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProjectMetadata {
     pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub project_id: Option<String>,
     pub status: Status,
     pub priority: Priority,
     #[serde(skip_serializing_if = "Option::is_none")]

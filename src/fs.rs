@@ -109,15 +109,30 @@ pub fn list_projects<P: AsRef<Path>>(workspace_root: P) -> Result<Vec<Project>> 
     Ok(projects)
 }
 
-/// Find a project by name
-pub fn find_project<P: AsRef<Path>>(workspace_root: P, name: &str) -> Result<Project> {
-    let project_path = workspace_root.as_ref().join(name);
+/// Find a project by name or project ID
+pub fn find_project<P: AsRef<Path>>(workspace_root: P, identifier: &str) -> Result<Project> {
+    let workspace_root = workspace_root.as_ref();
 
-    if !project_path.exists() {
-        return Err(anyhow::anyhow!("Project '{}' does not exist", name));
+    // First try direct path lookup (backward compatible)
+    let project_path = workspace_root.join(identifier);
+    if project_path.exists() {
+        return read_project(&project_path);
     }
 
-    read_project(&project_path)
+    // If not found by path, search all projects for matching project_id
+    let all_projects = list_projects(workspace_root)?;
+    for project in all_projects {
+        if let Some(pid) = &project.metadata.project_id {
+            if pid == identifier {
+                return Ok(project);
+            }
+        }
+    }
+
+    Err(anyhow::anyhow!(
+        "Project '{}' does not exist (searched by name and ID)",
+        identifier
+    ))
 }
 
 /// List all milestones in a project
@@ -231,6 +246,7 @@ mod tests {
 
         let metadata = ProjectMetadata {
             name: name.to_string(),
+            project_id: Some("test".to_string()),
             status: Status::InProgress,
             priority: Priority::Medium,
             created: None,
