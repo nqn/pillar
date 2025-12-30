@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2025-12-30
+
+### Added
+- Search command to find text across projects, milestones, and issues
+- Export command with JSON and CSV formats for data portability
+- Pre-commit hook for automatic code formatting checks
+- Self-hosted project management using Pillar itself
+
+### Fixed
+- CI test failures by adding `--test-threads=1` to coverage job
+- Clippy warnings for Rust 1.92 (use `is_some_and` and `strip_prefix`)
+- Code formatting issues across all Rust files
+
+### Changed
+- Repository now uses Pillar to track its own development
+- Improved documentation with hook setup instructions
+
+## [0.1.0] - 2025-12-29
+
 ### Added
 - Initial implementation of Pillar task tracker
 - Project management commands (create, list, show, edit)
