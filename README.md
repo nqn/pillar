@@ -2,6 +2,8 @@
 
 > A file-based task tracker for managing projects, milestones, and issues
 
+<img width="1392" height="910" alt="Screenshot 2026-01-10 at 5 38 12 AM" src="https://github.com/user-attachments/assets/be4ddcad-93ea-4885-808f-8a7c00e912df" />
+
 [![Crates.io](https://img.shields.io/crates/v/pillar-cli.svg)](https://crates.io/crates/pillar-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![CI](https://github.com/nqn/pillar/actions/workflows/ci.yml/badge.svg)](https://github.com/nqn/pillar/actions/workflows/ci.yml)
