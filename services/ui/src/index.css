@@ -63,6 +63,38 @@
   min-width: 0;
 }
 
+.flex-col {
+  flex-direction: column;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.justify-end {
+  justify-content: flex-end;
+}
+
+.items-start {
+  align-items: flex-start;
+}
+
+.items-end {
+  align-items: flex-end;
+}
+
+.overflow-y-auto {
+  overflow-y: auto;
+}
+
+.overflow-x-auto {
+  overflow-x: auto;
+}
+
 .gap-2 {
   gap: 8px;
 }
@@ -107,6 +139,8 @@ body {
   height: 100vh;
   width: 100vw;
   transition: all 0.2s ease;
+  overflow: hidden;
+  min-width: 0;
 }
 
 /* Sidebar */
@@ -216,12 +250,41 @@ body {
   font-weight: 500;
 }
 
+.sidebar-filter-btn {
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border-muted);
+  background: transparent;
+  color: var(--fg-muted);
+  cursor: pointer;
+  text-transform: uppercase;
+  font-weight: 600;
+  transition: all 0.2s;
+  line-height: 1.4;
+}
+
+.sidebar-filter-btn:hover {
+  color: var(--fg-main);
+  border-color: var(--border-main);
+}
+
+.sidebar-filter-btn.active {
+  background: var(--bg-element);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 /* Main Content */
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
+  background-color: var(--bg-app);
+  position: relative;
 }
 
 .header {
@@ -792,16 +855,23 @@ body {
 /* Projects & Milestones View */
 .projects-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
-  padding: 0 20px 20px 20px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+  padding: 0 24px 24px 24px;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+  min-width: 0 !important;
 }
 
 .projects-list {
   display: flex;
   flex-direction: column;
   padding: 0 24px 24px 24px;
-  gap: 8px;
+  gap: 10px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .project-list-row {
@@ -914,11 +984,17 @@ body {
 
 .milestone-timeline {
   padding: 24px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 /* Gantt Chart */
 .gantt-container {
   overflow-x: auto;
+  width: 100%;
+  max-width: 100%;
   background: var(--bg-app);
   border: 1px solid var(--border-muted);
   border-radius: var(--radius-lg);
@@ -1077,9 +1153,20 @@ body {
 }
 
 .scroll-area-viewport {
-  width: 100%;
-  height: 100%;
+  width: 100% !important;
+  height: 100% !important;
   border-radius: inherit;
+  min-width: 0;
+}
+
+/* Aggressively target the internal Radix table wrapper that causes stretching */
+.scroll-area-viewport>div,
+[data-radix-scroll-area-viewport]>div {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow-x: hidden !important;
 }
 
 .scroll-area-scrollbar {
@@ -1130,14 +1217,15 @@ body {
 
 .project-group-header {
   grid-column: 1 / -1;
-  padding: 16px 4px 8px 4px !important;
+  padding: 24px 0 12px 0 !important;
   font-size: 11px !important;
   font-weight: 700 !important;
   color: var(--fg-subtle) !important;
   text-transform: uppercase !important;
   letter-spacing: 0.05em !important;
   border-bottom: 1px solid var(--border-muted);
-  margin-bottom: 8px;
+  margin-bottom: 16px;
+  width: 100%;
 }
 
 .toggle-group {
@@ -1163,6 +1251,193 @@ body {
 .toggle-group .btn-icon:hover {
   color: var(--fg-app);
   background-color: var(--bg-panel);
+}
+
+.project-detail-view {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  background-color: var(--bg-element);
+  border: 1px solid var(--border-muted);
+  color: var(--fg-subtle);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 24px;
+}
+
+.btn-back:hover {
+  background-color: var(--border-muted);
+  color: var(--fg-main);
+  border-color: var(--border-main);
+}
+
+.project-detail-main {
+  min-width: 0;
+}
+
+.project-detail-sidebar {
+  border-left: 1px solid var(--border-muted);
+  padding-left: 32px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-muted);
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+}
+
+.markdown-body {
+  line-height: 1.6;
+  color: var(--fg-main);
+  background-color: var(--bg-panel);
+  padding: 32px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-muted);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.markdown-body h1 {
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+
+.markdown-body h2 {
+  font-size: 20px;
+  margin: 24px 0 12px 0;
+}
+
+.markdown-body h3 {
+  font-size: 16px;
+  margin: 16px 0 8px 0;
+}
+
+.markdown-body p {
+  margin-bottom: 12px;
+}
+
+.markdown-body li {
+  margin-left: 20px;
+  margin-bottom: 4px;
+}
+
+.markdown-body br {
+  content: "";
+  display: block;
+  margin-bottom: 8px;
+}
+
+.text-subtle {
+  color: var(--fg-subtle);
+}
+
+.text-xs {
+  font-size: 12px;
+}
+
+.text-sm {
+  font-size: 13px;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.mb-4 {
+  margin-bottom: 16px;
+}
+
+.mb-8 {
+  margin-bottom: 32px;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mini-issue-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-muted);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mini-issue-row:hover {
+  border-color: var(--accent);
+  background-color: var(--bg-element);
+}
+
+.mini-issue-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mini-issue-title {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--fg-main);
+  flex: 1;
+}
+
+.btn-subtle {
+  background: transparent;
+  border: 1px solid var(--border-muted);
+  color: var(--fg-subtle);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-subtle:hover {
+  background: var(--bg-element);
+  border-color: var(--border-main);
+  color: var(--fg-main);
+}
+
+.mini-issue-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--fg-subtle);
+  background-color: var(--bg-element);
+  padding: 2px 8px;
+  border-radius: 10px;
 }
 
 .toggle-group .btn-icon.active {

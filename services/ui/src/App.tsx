@@ -18,7 +18,6 @@ import {
     HeightIcon,
     LayersIcon,
     CubeIcon,
-    ViewVerticalIcon,
     DoubleArrowLeftIcon,
     HamburgerMenuIcon,
     ViewGridIcon,
@@ -49,6 +48,7 @@ interface Project {
     name: string
     status: string
     priority: string
+    description?: string
 }
 
 interface Milestone {
@@ -130,6 +130,7 @@ function App() {
 
     const [sortBy, setSortBy] = useState('number')
     const [groupBy, setGroupBy] = useState('none')
+    const [sidebarProjectStatus, setSidebarProjectStatus] = useState<'all' | 'active' | 'completed'>('active')
 
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme)
@@ -189,8 +190,19 @@ function App() {
             if (searchTerm && !p.name.toLowerCase().includes(searchTerm.toLowerCase()) && !p.id.toLowerCase().includes(searchTerm.toLowerCase())) return false
             return true
         })
+
+        result.sort((a, b) => {
+            if (sortBy === 'priority') {
+                return (priorityWeight[b.priority] || 0) - (priorityWeight[a.priority] || 0)
+            }
+            if (sortBy === 'status') {
+                return (statusWeight[b.status] || 0) - (statusWeight[a.status] || 0)
+            }
+            return a.name.localeCompare(b.name)
+        })
+
         return result
-    }, [projects, searchTerm, statusFilter, priorityFilter])
+    }, [projects, searchTerm, statusFilter, priorityFilter, sortBy])
 
     const groupedProjects = useMemo(() => {
         if (groupBy === 'none') {
@@ -270,8 +282,8 @@ function App() {
                             {!isSidebarCollapsed && <span>All Issues</span>}
                         </div>
                         <div
-                            className={`nav-item ${currentView === 'projects' ? 'active' : ''}`}
-                            onClick={() => { setCurrentView('projects'); }}
+                            className={`nav-item ${currentView === 'projects' && selectedProjectId === null ? 'active' : ''}`}
+                            onClick={() => { setCurrentView('projects'); setSelectedProjectId(null); }}
                             title="All Projects"
                         >
                             <CubeIcon />
@@ -280,16 +292,47 @@ function App() {
                     </div>
 
                     <div className="nav-section">
-                        <div className="nav-section-title">Projects</div>
-                        {projects.map(project => (
+                        <div className="nav-section-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span>Projects</span>
+                            {!isSidebarCollapsed && (
+                                <div className="flex gap-1">
+                                    <button
+                                        className={`sidebar-filter-btn ${sidebarProjectStatus === 'active' ? 'active' : ''}`}
+                                        onClick={(e) => { e.stopPropagation(); setSidebarProjectStatus('active'); }}
+                                    >Active</button>
+                                    <button
+                                        className={`sidebar-filter-btn ${sidebarProjectStatus === 'completed' ? 'active' : ''}`}
+                                        onClick={(e) => { e.stopPropagation(); setSidebarProjectStatus('completed'); }}
+                                    >Done</button>
+                                    <button
+                                        className={`sidebar-filter-btn ${sidebarProjectStatus === 'all' ? 'active' : ''}`}
+                                        onClick={(e) => { e.stopPropagation(); setSidebarProjectStatus('all'); }}
+                                    >All</button>
+                                </div>
+                            )}
+                        </div>
+                        {projects.filter(p => {
+                            if (sidebarProjectStatus === 'all') return true
+                            if (sidebarProjectStatus === 'active') return p.status !== 'completed' && p.status !== 'cancelled'
+                            if (sidebarProjectStatus === 'completed') return p.status === 'completed' || p.status === 'cancelled'
+                            return true
+                        }).map(project => (
                             <div
                                 key={project.id}
-                                className={`nav-item ${(currentView === 'issues' && selectedProjectId === project.id) ? 'active' : ''}`}
-                                onClick={() => { setCurrentView('issues'); setSelectedProjectId(project.id); setSelectedMilestoneId(null); }}
+                                className={`nav-item ${selectedProjectId === project.id ? 'active' : ''}`}
+                                onClick={() => {
+                                    setSelectedProjectId(project.id);
+                                    setCurrentView('projects');
+                                    setSelectedMilestoneId(null);
+                                }}
                                 title={project.name}
+                                style={{ justifyContent: 'space-between' }}
                             >
-                                <ViewVerticalIcon />
-                                {!isSidebarCollapsed && <span>{project.name}</span>}
+                                <div className="flex items-center gap-2 overflow-hidden">
+                                    <StatusIcon status={project.status} size={12} />
+                                    {!isSidebarCollapsed && <span className="truncate">{project.name}</span>}
+                                </div>
+                                {!isSidebarCollapsed && <PriorityDot priority={project.priority} />}
                             </div>
                         ))}
                     </div>
@@ -486,7 +529,7 @@ function App() {
                 {currentView === 'issues' ? (
                     <div className="view-pane-container">
                         {/* Issue List View */}
-                        <ScrollArea className="flex-1">
+                        <div className="flex-1 overflow-y-auto">
                             <div className="issue-table">
                                 {loading ? (
                                     <div className="loading-overlay">
@@ -548,7 +591,7 @@ function App() {
                                     </div>
                                 )}
                             </div>
-                        </ScrollArea>
+                        </div>
 
                         {/* Issue Detail Panel */}
                         {selectedIssue && (
@@ -583,7 +626,7 @@ function App() {
                                         </div>
                                     </div>
                                 </header>
-                                <ScrollArea className="flex-1">
+                                <div className="flex-1 overflow-y-auto">
                                     <div className="detail-body">
                                         <div className="markdown-body">
                                             {selectedIssue.description ? (
@@ -600,14 +643,165 @@ function App() {
                                             )}
                                         </div>
                                     </div>
-                                </ScrollArea>
+                                </div>
                             </aside>
                         )}
                     </div>
+                ) : selectedProjectId ? (
+                    <div className="flex-1 overflow-y-auto">
+                        <div className="project-detail-view" style={{ padding: '32px' }}>
+                            {projects.find(p => p.id === selectedProjectId) ? (() => {
+                                const project = projects.find(p => p.id === selectedProjectId)!;
+                                const projectIssues = issues.filter(i => i.project === project.id);
+                                const projectMilestones = milestones.filter(m => m.project === project.id);
+                                const completedIssues = projectIssues.filter(i => i.status === 'completed').length;
+                                const progress = projectIssues.length > 0 ? (completedIssues / projectIssues.length) * 100 : 0;
+
+                                return (
+                                    <>
+                                        <div className="flex justify-between items-start mb-8">
+                                            <div>
+                                                <button
+                                                    className="btn-back"
+                                                    onClick={() => setSelectedProjectId(null)}
+                                                >
+                                                    <DoubleArrowLeftIcon /> Back to All Projects
+                                                </button>
+                                                <h1 style={{ fontSize: '32px', fontWeight: 800, marginBottom: '8px' }}>{project.name}</h1>
+                                                <div className="flex items-center gap-4 text-sm text-subtle">
+                                                    <span className="flex items-center gap-2">
+                                                        <StatusIcon status={project.status} /> {project.status}
+                                                    </span>
+                                                    <span className="flex items-center gap-2">
+                                                        <PriorityDot priority={project.priority} /> {project.priority} priority
+                                                    </span>
+                                                    <span>{projectIssues.length} issues • {projectMilestones.length} milestones</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col items-end gap-2">
+                                                <div className="text-sm font-semibold">{Math.round(progress)}% Complete</div>
+                                                <div style={{ width: '200px', height: '8px', background: 'var(--bg-element)', borderRadius: '4px', overflow: 'hidden' }}>
+                                                    <div style={{ width: `${progress}%`, height: '100%', background: 'var(--status-completed)' }} />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '48px' }}>
+                                            <div className="project-detail-main">
+                                                <section className="mb-8">
+                                                    <h2 className="section-title mb-4">Description</h2>
+                                                    <div className="markdown-body">
+                                                        {project.description ? (
+                                                            project.description.split('\n').map((line: string, i: number) => {
+                                                                if (line.startsWith('# ')) return <h1 key={i}>{line.substring(2)}</h1>
+                                                                if (line.startsWith('## ')) return <h2 key={i}>{line.substring(3)}</h2>
+                                                                if (line.startsWith('### ')) return <h3 key={i}>{line.substring(4)}</h3>
+                                                                if (line.startsWith('- ')) return <li key={i}>{line.substring(2)}</li>
+                                                                if (line.trim() === '') return <br key={i} />
+                                                                return <p key={i}>{line}</p>
+                                                            })
+                                                        ) : (
+                                                            <p className="text-subtle italic">No README.md found for this project.</p>
+                                                        )}
+                                                    </div>
+                                                </section>
+
+                                                <section className="mb-8">
+                                                    <div className="flex justify-between items-center mb-4">
+                                                        <h2 className="section-title">Milestone Timeline</h2>
+                                                    </div>
+                                                    <div className="gantt-container">
+                                                        <div className="gantt-header">
+                                                            <div className="gantt-labels">Milestone</div>
+                                                            <div className="gantt-grid">
+                                                                {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(m => (
+                                                                    <div key={m} className="gantt-col">{m}</div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                        {projectMilestones.map(m => {
+                                                            const date = m.target_date ? new Date(m.target_date) : new Date()
+                                                            const month = date.getMonth()
+                                                            const left = (month / 12) * 100
+                                                            const width = 8
+                                                            return (
+                                                                <div key={m.id} className="gantt-row">
+                                                                    <div className="gantt-milestone-label">
+                                                                        <StatusIcon status={m.status} size={10} />
+                                                                        <span style={{ marginLeft: '8px' }}>{m.title}</span>
+                                                                    </div>
+                                                                    <div className="gantt-chart-area">
+                                                                        <div
+                                                                            className="gantt-bar text-xs"
+                                                                            style={{
+                                                                                left: `${left}%`,
+                                                                                width: `${width}%`,
+                                                                                background: m.status === 'completed' ? 'var(--status-completed)' :
+                                                                                    m.status === 'in-progress' ? 'var(--status-progress)' : 'var(--accent)'
+                                                                            }}
+                                                                        >
+                                                                            {m.target_date ? date.getDate() : ''}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            )
+                                                        })}
+                                                    </div>
+                                                </section>
+                                            </div>
+
+                                            <div className="project-detail-sidebar">
+                                                <section className="mb-8">
+                                                    <div className="flex justify-between items-center mb-4">
+                                                        <h3 className="section-title" style={{ margin: 0, border: 'none' }}>Project Issues</h3>
+                                                        <span className="text-xs text-subtle">{projectIssues.length} total</span>
+                                                    </div>
+                                                    <div className="flex flex-col gap-3">
+                                                        {projectIssues.slice(0, 15).map(issue => (
+                                                            <div
+                                                                key={issue.id}
+                                                                className="mini-issue-row"
+                                                                onClick={() => { setSelectedIssue(issue); setCurrentView('issues'); }}
+                                                            >
+                                                                <div className="mini-issue-header">
+                                                                    <span className="mini-issue-title">{issue.title}</span>
+                                                                    <span className="text-xs font-mono text-muted">[{issue.id}]</span>
+                                                                </div>
+                                                                <div className="mini-issue-footer">
+                                                                    <div className="status-pill">
+                                                                        <StatusIcon status={issue.status} size={10} />
+                                                                        <span className="capitalize">{issue.status}</span>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-1 text-xs text-subtle">
+                                                                        <PriorityDot priority={issue.priority} />
+                                                                        <span className="capitalize">{issue.priority}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                        {projectIssues.length > 15 && (
+                                                            <button
+                                                                className="btn-subtle w-full text-xs py-3"
+                                                                onClick={() => setCurrentView('issues')}
+                                                            >
+                                                                View all {projectIssues.length} issues
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </section>
+                                            </div>
+                                        </div>
+                                    </>
+                                );
+                            })() : (
+                                <div className="empty-state">Project not found</div>
+                            )}
+                        </div>
+                    </div>
                 ) : (
-                    <ScrollArea className="flex-1">
+                    <div className="flex-1 overflow-y-auto">
                         <div className="view-pane-header" style={{ padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <h2 style={{ fontSize: '18px', fontWeight: 600 }}>Projects</h2>
+                            <h2 style={{ fontSize: '18px', fontWeight: 600 }}>Projects Overview</h2>
                             <div className="toggle-group">
                                 <button
                                     className={`btn-icon ${projectViewMode === 'grid' ? 'active' : ''}`}
@@ -642,7 +836,7 @@ function App() {
 
                                         if (projectViewMode === 'list') {
                                             return (
-                                                <div key={project.id} className="project-list-row" onClick={() => { setSelectedProjectId(project.id); setCurrentView('issues'); }}>
+                                                <div key={project.id} className="project-list-row" onClick={() => setSelectedProjectId(project.id)}>
                                                     <div className="project-list-info">
                                                         <span className="project-list-name">{project.name}</span>
                                                         <span className="project-list-stats">{projectIssues.length} issues • {projectMilestones.length} milestones</span>
@@ -662,7 +856,7 @@ function App() {
                                         }
 
                                         return (
-                                            <div key={project.id} className="project-card" onClick={() => { setSelectedProjectId(project.id); setCurrentView('issues'); }}>
+                                            <div key={project.id} className="project-card" onClick={() => setSelectedProjectId(project.id)}>
                                                 <div className="project-card-header">
                                                     <div>
                                                         <h3 className="project-card-title">{project.name}</h3>
@@ -694,9 +888,8 @@ function App() {
                                 </Fragment>
                             ))}
                         </div>
-
-                        <div className="milestone-timeline">
-                            <h2 style={{ marginBottom: '16px' }}>Project Timeline</h2>
+                        <div className="milestone-timeline" style={{ padding: '0 24px 48px 24px' }}>
+                            <h2 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '24px', borderBottom: '1px solid var(--border-muted)', paddingBottom: '12px' }}>Workspace Timeline</h2>
                             <div className="gantt-container">
                                 <div className="gantt-header">
                                     <div className="gantt-labels">Milestone</div>
@@ -707,11 +900,10 @@ function App() {
                                     </div>
                                 </div>
                                 {milestones.filter(m => !selectedProjectId || m.project === selectedProjectId).map(m => {
-                                    // Dummy logic for Gantt bar positioning based on target_date
                                     const date = m.target_date ? new Date(m.target_date) : new Date()
                                     const month = date.getMonth()
                                     const left = (month / 12) * 100
-                                    const width = 8 // 1 month approx
+                                    const width = 8
 
                                     return (
                                         <div key={m.id} className="gantt-row">
@@ -738,7 +930,7 @@ function App() {
                                 })}
                             </div>
                         </div>
-                    </ScrollArea>
+                    </div>
                 )}
             </main>
         </div>
