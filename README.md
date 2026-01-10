@@ -18,6 +18,7 @@ Pillar is a command-line task tracker that uses plain text files (Markdown with 
 - **🏷️ Flexible Filtering**: Filter by status, priority, tags, and more
 - **📊 Kanban Board**: Visualize work across status columns
 - **🌐 Web UI**: Launch a premium local dashboard with `pillar ui`
+- **🤖 Agent-Friendly**: Designed for AI coding agents with a clean CLI and Markdown-first structure
 - **🔍 Status Overview**: Get a quick snapshot of all active work
 - **⚙️ Configurable**: Separate PM data from code with base directory support
 - **🚀 No Database**: Git-friendly plain text files
@@ -301,6 +302,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Inspired by tools like Linear, Jira, and GitHub Issues
 - Built with [Rust](https://www.rust-lang.org/) and [clap](https://github.com/clap-rs/clap)
 - Follows the [Keep a Changelog](https://keepachangelog.com/) format
+
+## 🤖 Agentic Development
+
+Pillar is uniquely positioned for **Agentic Development**. Because it uses plain Markdown files and a structured CLI, it is the perfect tool for AI coding agents (like GitHub Copilot, Cursor, or specialized agents) to track their own progress.
+
+- **Clean CLI**: Easy for agents to discover and execute commands.
+- **Markdown Context**: Agents can read the entire project history and current status directly from the file system.
+- **System Prompts**: Provide a clear "contract" for how agents should manage tasks.
+
+Check out the [Agent Guide](docs/AGENTS.md) for a ready-to-use system prompt for your AI agents.
 
 ## 📊 Why Pillar?
 

@@ -142,7 +142,42 @@ fn main() -> Result<()> {
                 .build()?;
             rt.block_on(commands::run_ui(port))?;
         }
+        Commands::Prompts => {
+            print_agent_prompts();
+        }
     }
 
     Ok(())
+}
+
+fn print_agent_prompts() {
+    println!(
+        r#"# AI Agent System Prompt for Pillar
+
+Copy and paste the following into your AI agent's system prompt or instructions.
+
+---
+
+1. You coordinate your work using `pillar` cli.
+
+```bash
+pillar -h
+A file-based task tracker CLI
+```
+
+#### Workflow Guidance
+
+You should generally create projects, milestones, and issues via the CLI, and then expand on the generated Markdown files to capture deep design details, requirements, and acceptance criteria.
+
+The normal flow for building a complex feature:
+1. **Define data structures** within the issue or a separate design doc.
+2. **Define core algorithms/interactions** and invariants.
+3. **Build tests** ranging from unit to integration.
+4. **Build tools/REPLs** for experimenting and verifying functionality layer by layer.
+
+Always update issue status as you progress (`todo` -> `in-progress` -> `completed`).
+
+---
+"#
+    );
 }

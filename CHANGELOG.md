@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Support for project/issue search, filtering, sorting, and grouping
   - Responsive dark/light theme supporting both master and detail views
   - Built-in Axum server for API and static asset delivery
+- New `pillar prompts` command to provide ready-to-use system prompts for AI agents.
 
 ## [0.1.2] - 2025-12-30
 

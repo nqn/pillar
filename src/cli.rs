@@ -74,6 +74,9 @@ pub enum Commands {
         #[arg(short, long, default_value = "3000")]
         port: u16,
     },
+
+    /// Show recommended system prompts for AI agents
+    Prompts,
 }
 
 #[derive(Subcommand)]
