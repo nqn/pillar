@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.2] - 2026-01-10
+
+### Added
+- Complete UI migration to Radix UI component library and iconography (Radix Icons)
+- New collapsible Sidebar system:
+  - Sidebar can now be fully minimized to increase workspace area
+  - Inlined "Hamburger" expand trigger in the main header
+  - Improved theme toggle and navigation persistence
+- Enhanced Projects Dashboard:
+  - Toggle between **Grid** and **List** views for better oversight
+  - Integrated Project Filtering (Status, Priority, Search) directly into the view
+  - Project Grouping support (by Status/Priority) with dynamic counts
+  - Compact project cards with inline milestones and progress indicators
+- Refined responsive layout with optimized grid systems for different screen sizes
+
+### Fixed
+- Improved header alignment and breadcrumb spacing
+- Fixed project card width issues in the grid view
+- Corrected multiple structural and linting issues in the UI codebase
+- Removed unused `lucide-react` dependency in favor of Radix Icons
+
 ## [0.2.1] - 2026-01-10
 
 ### Added
