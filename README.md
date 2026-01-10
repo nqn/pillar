@@ -173,7 +173,6 @@ pillar ui
 # or specify a custom port
 pillar ui --port 8080
 ```
-```
 
 ## 📂 File Structure
 
