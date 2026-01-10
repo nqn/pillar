@@ -11,9 +11,14 @@ readme = "README.md"
 license = "MIT"
 keywords = ["task", "project-management", "cli", "productivity", "markdown"]
 categories = ["command-line-utilities", "development-tools"]
-exclude = [
-    "tests/fixtures/*",
-    ".github/*",
+include = [
+    "src/**/*",
+    "Cargo.toml",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "services/ui/dist/**/*",
+    ".pillar/**/*",
 ]
 
 [[bin]]
