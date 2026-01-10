@@ -58,13 +58,13 @@ cd pillar
 git checkout -b feature/my-feature
 
 # Build the project
-cargo build
+make build
 
 # Run tests (use single-threaded execution to avoid race conditions)
-cargo test -- --test-threads=1
+make test
 
 # Run with your changes
-cargo run -- init
+./target/debug/pillar init
 ```
 
 ### Project Structure

@@ -282,13 +282,13 @@ git clone https://github.com/nqn/pillar.git
 cd pillar
 
 # Run tests (single-threaded to avoid race conditions)
-cargo test -- --test-threads=1
+make test
 
-# Run with logging
-RUST_LOG=debug cargo run -- init
+# Build debug binary
+make build
 
-# Build release
-cargo build --release
+# Build release (Bundles UI assets automatically)
+make release
 ```
 
 ## 📝 License
