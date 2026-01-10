@@ -67,6 +67,13 @@ pub enum Commands {
         #[arg(short, long)]
         output: Option<String>,
     },
+
+    /// Launch the Pillar Web UI
+    Ui {
+        /// Port to run the UI on
+        #[arg(short, long, default_value = "3000")]
+        port: u16,
+    },
 }
 
 #[derive(Subcommand)]

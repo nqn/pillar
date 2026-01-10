@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Interactive Web UI dashboard launched with `pillar ui`
+  - Stateless, file-system-first architecture
+  - Bundled directly into the binary for zero-config usage
+  - Support for project/issue search, filtering, sorting, and grouping
+  - Responsive dark/light theme supporting both master and detail views
+  - Built-in Axum server for API and static asset delivery
 
 ## [0.1.2] - 2025-12-30
 

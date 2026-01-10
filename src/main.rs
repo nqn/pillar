@@ -136,6 +136,12 @@ fn main() -> Result<()> {
         } => {
             commands::export::export(&format, &entity_type, output.as_deref())?;
         }
+        Commands::Ui { port } => {
+            let rt = tokio::runtime::Builder::new_multi_thread()
+                .enable_all()
+                .build()?;
+            rt.block_on(commands::run_ui(port))?;
+        }
     }
 
     Ok(())
