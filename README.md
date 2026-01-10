@@ -15,6 +15,7 @@ Pillar is a command-line task tracker that uses plain text files (Markdown with 
 - **💬 Comments**: Add timestamped comments to any entity
 - **🏷️ Flexible Filtering**: Filter by status, priority, tags, and more
 - **📊 Kanban Board**: Visualize work across status columns
+- **🌐 Web UI**: Launch a premium local dashboard with `pillar ui`
 - **🔍 Status Overview**: Get a quick snapshot of all active work
 - **⚙️ Configurable**: Separate PM data from code with base directory support
 - **🚀 No Database**: Git-friendly plain text files
@@ -36,6 +37,9 @@ pillar issue create MyApp "Fix login bug" --priority urgent --milestone "v1.0"
 
 # View board
 pillar board
+
+# Launch Web UI
+pillar ui
 
 # Add a comment
 pillar comment add issue MyApp 1 "Working on this now"
@@ -157,6 +161,16 @@ pillar board
 
 # Board for specific project
 pillar board MyProject
+
+### Web UI
+
+Launch the interactive local dashboard:
+
+```bash
+pillar ui
+# or specify a custom port
+pillar ui --port 8080
+```
 ```
 
 ## 📂 File Structure
