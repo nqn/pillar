@@ -99,7 +99,7 @@
   gap: 8px;
 }
 
-[data-theme='light'] {
+[data-theme="light"] {
   --bg-app: #ffffff;
   --bg-panel: #f6f8fa;
   --bg-element: #ffffff;
@@ -127,7 +127,9 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica,
+    Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
   background-color: var(--bg-app);
   color: var(--fg-main);
   font-size: 14px;
@@ -448,7 +450,7 @@ body {
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
-  z-index: 50;
+  z-index: 2000;
   min-width: 140px;
 }
 
@@ -622,7 +624,7 @@ body {
 .issue-cell-id {
   width: 44px;
   color: var(--fg-subtle);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: 11px;
 }
 
@@ -742,23 +744,16 @@ body {
   line-height: 1.6;
 }
 
-.markdown-body h1 {
-  font-size: 1.6rem;
-  margin-bottom: 1rem;
-}
-
-.markdown-body h2 {
-  font-size: 1.3rem;
-  margin: 1.5rem 0 0.75rem;
-  border-bottom: 1px solid var(--border-muted);
-  padding-bottom: 4px;
-}
-
-.markdown-body p {
-  margin-bottom: 1.2rem;
-  color: var(--fg-main);
-  opacity: 0.9;
-}
+.markdown-body h1 { font-size: 1.6rem; margin-bottom: 1rem; }
+.markdown-body h2 { font-size: 1.3rem; margin: 1.5rem 0 0.75rem; border-bottom: 1px solid var(--border-muted); padding-bottom: 4px; }
+.markdown-body h3 { font-size: 1.1rem; margin: 1.2rem 0 0.6rem; }
+.markdown-body p { margin-bottom: 1.2rem; color: var(--fg-main); opacity: 1; line-height: 1.6; }
+.markdown-body ul, .markdown-body ol { padding-left: 1.5rem; margin-bottom: 1.2rem; }
+.markdown-body li { margin-bottom: 0.4rem; }
+.markdown-body blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; margin-bottom: 1.2rem; color: var(--fg-subtle); font-style: italic; }
+.markdown-body code { background: var(--bg-element); padding: 2px 4px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.9em; }
+.markdown-body pre { background: var(--bg-element); padding: 16px; border-radius: 8px; overflow-x: auto; margin-bottom: 1.2rem; border: 1px solid var(--border-muted); }
+.markdown-body pre code { background: transparent; padding: 0; border-radius: 0; font-size: 13px; color: var(--fg-main); }
 
 /* Buttons & Elements */
 .btn {
@@ -952,7 +947,10 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s,
+    border-color 0.2s;
   cursor: pointer;
   min-height: 180px;
 }
@@ -1055,7 +1053,11 @@ body {
   flex: 1;
   position: relative;
   height: 48px;
-  background-image: linear-gradient(to right, var(--border-subtle) 1px, transparent 1px);
+  background-image: linear-gradient(
+    to right,
+    var(--border-subtle) 1px,
+    transparent 1px
+  );
   background-size: 100px 100%;
 }
 
@@ -1160,8 +1162,8 @@ body {
 }
 
 /* Aggressively target the internal Radix table wrapper that causes stretching */
-.scroll-area-viewport>div,
-[data-radix-scroll-area-viewport]>div {
+.scroll-area-viewport > div,
+[data-radix-scroll-area-viewport] > div {
   display: block !important;
   width: 100% !important;
   max-width: 100% !important;
@@ -1444,4 +1446,145 @@ body {
   background-color: var(--bg-panel);
   color: var(--accent);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Tiptap Editor Styles */
+.editor-container {
+  border: 1px solid var(--border-muted);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-app);
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-muted);
+}
+
+.tiptap-content {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 200px;
+}
+
+.tiptap-content .ProseMirror {
+  padding: 16px;
+  outline: none;
+  min-height: 200px;
+}
+
+.tiptap-content .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--fg-muted);
+  pointer-events: none;
+  height: 0;
+}
+
+.tiptap-content h1 {
+  font-size: 1.6rem;
+  margin-bottom: 0.8rem;
+}
+.tiptap-content h2 {
+  font-size: 1.3rem;
+  margin: 1.2rem 0 0.6rem;
+  border-bottom: 1px solid var(--border-muted);
+}
+.tiptap-content p {
+  margin-bottom: 1rem;
+}
+.tiptap-content ul,
+.tiptap-content ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+.tiptap-content blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 1rem;
+  margin-bottom: 1rem;
+  color: var(--fg-subtle);
+}
+.tiptap-content code {
+  background: var(--bg-element);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+.tiptap-content pre {
+  background: var(--bg-element);
+  padding: 12px;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.btn-icon.active {
+  background-color: var(--bg-element);
+  color: var(--accent);
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-main);
+  border-radius: var(--radius-lg);
+  width: 500px;
+  max-width: 90vw;
+  box-shadow: var(--shadow-lg);
+  padding: 24px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.form-input {
+  width: 100%;
+  height: 36px;
+  background: var(--bg-app);
+  border: 1px solid var(--border-muted);
+  border-radius: var(--radius-md);
+  padding: 0 12px;
+  color: var(--fg-main);
+  font-size: 14px;
+}
+
+.form-input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
 }

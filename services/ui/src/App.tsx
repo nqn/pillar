@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo, Fragment } from 'react'
 import { useLocalStorage } from './hooks/useLocalStorage'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 import {
     ArchiveIcon,
@@ -24,7 +26,11 @@ import {
     HamburgerMenuIcon,
     ViewGridIcon,
     ListBulletIcon,
+    PlusIcon,
+    Pencil1Icon,
+    CheckIcon,
 } from '@radix-ui/react-icons'
+import { MarkdownEditor } from './components/MarkdownEditor'
 import { ScrollArea } from './components/ui/ScrollArea'
 import {
     Select,
@@ -101,6 +107,24 @@ const PriorityDot = ({ priority }: { priority: string }) => {
     return <span className={`priority-badge-dot priority-${priority}`} />
 }
 
+const Modal = ({ title, children, onConfirm, onCancel }: any) => (
+    <div className="modal-overlay">
+        <div className="modal-content">
+            <div className="flex justify-between items-center mb-6">
+                <h2 style={{ fontSize: '18px', fontWeight: 600 }}>{title}</h2>
+                <button className="btn-icon" onClick={onCancel}><Cross2Icon /></button>
+            </div>
+            <div className="modal-body">
+                {children}
+            </div>
+            <div className="form-actions">
+                <button className="btn" onClick={onCancel}>Cancel</button>
+                <button className="btn btn-primary" onClick={onConfirm}>Create</button>
+            </div>
+        </div>
+    </div>
+)
+
 function App() {
     const [theme, setTheme] = useLocalStorage<'dark' | 'light'>('pillar-theme', 'dark')
     const [projects, setProjects] = useState<Project[]>([])
@@ -139,21 +163,36 @@ function App() {
         document.documentElement.setAttribute('data-theme', theme)
     }, [theme])
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true)
-            try {
-                const res = await fetch('/api/data')
-                const data = await res.json()
-                setProjects(data.projects || [])
-                setMilestones(data.milestones || [])
-                setIssues(data.issues || [])
-            } catch (error) {
-                console.error('Failed to fetch data:', error)
-            } finally {
-                setLoading(false)
-            }
+    const [isEditing, setIsEditing] = useState(false)
+    const [editedDescription, setEditedDescription] = useState('')
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState<'project' | 'milestone' | 'issue' | null>(null)
+    const [createFormData, setCreateFormData] = useState({
+        name: '',
+        id: '',
+        title: '',
+        project: '',
+        priority: 'medium',
+        milestone: '',
+        date: '',
+        tags: ''
+    })
+
+    const fetchData = async () => {
+        setLoading(true)
+        try {
+            const res = await fetch('/api/data')
+            const data = await res.json()
+            setProjects(data.projects || [])
+            setMilestones(data.milestones || [])
+            setIssues(data.issues || [])
+        } catch (error) {
+            console.error('Failed to fetch data:', error)
+        } finally {
+            setLoading(false)
         }
+    }
+
+    useEffect(() => {
         fetchData()
     }, [])
 
@@ -259,6 +298,93 @@ function App() {
 
     const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark')
 
+    const handleSaveIssue = async () => {
+        if (!selectedIssue) return
+        try {
+            const [proj, num] = selectedIssue.id.split('/')
+            await fetch(`/api/issues/${proj}/${num}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    status: selectedIssue.status,
+                    priority: selectedIssue.priority,
+                    description: editedDescription
+                })
+            })
+            setIsEditing(false)
+            fetchData()
+        } catch (error) {
+            console.error('Failed to save issue:', error)
+        }
+    }
+
+    const handleSaveProject = async () => {
+        if (!selectedProjectId) return
+        try {
+            await fetch(`/api/projects/${selectedProjectId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    description: editedDescription
+                })
+            })
+            setIsEditing(false)
+            fetchData()
+        } catch (error) {
+            console.error('Failed to save project:', error)
+        }
+    }
+
+    const handleCreate = async () => {
+        let url = ''
+        let body: any = {}
+        if (isCreateModalOpen === 'project') {
+            url = '/api/projects'
+            body = {
+                name: createFormData.name,
+                id: createFormData.id || undefined,
+                priority: createFormData.priority
+            }
+        } else if (isCreateModalOpen === 'issue') {
+            url = '/api/issues'
+            body = {
+                project: createFormData.project || selectedProjectId,
+                title: createFormData.title,
+                priority: createFormData.priority,
+                milestone: createFormData.milestone === '_none' ? undefined : (createFormData.milestone || undefined),
+                tags: createFormData.tags || undefined
+            }
+        } else if (isCreateModalOpen === 'milestone') {
+            url = '/api/milestones'
+            body = {
+                project: createFormData.project || selectedProjectId,
+                title: createFormData.title,
+                date: createFormData.date || undefined
+            }
+        }
+
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            })
+            if (res.ok) {
+                setIsCreateModalOpen(null)
+                setCreateFormData({
+                    name: '', id: '', title: '', project: '', priority: 'medium', milestone: '', date: '', tags: ''
+                })
+                fetchData()
+            } else {
+                const error = await res.text()
+                alert(`Error: ${error}`)
+            }
+        } catch (error) {
+            console.error('Failed to create:', error)
+        }
+    }
+
+
     return (
         <div className={`app-container ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
             {/* Sidebar */}
@@ -338,6 +464,15 @@ function App() {
                                 {!isSidebarCollapsed && <PriorityDot priority={project.priority} />}
                             </div>
                         ))}
+                        {!isSidebarCollapsed && (
+                            <div 
+                                className="nav-item text-subtle" 
+                                style={{ marginTop: '8px', opacity: 0.7, border: '1px dashed var(--border-muted)', justifyContent: 'center' }}
+                                onClick={() => { setIsCreateModalOpen('project'); setCreateFormData(prev => ({ ...prev, project: '' })); }}
+                            >
+                                <PlusIcon /> <span>New Project</span>
+                            </div>
+                        )}
                     </div>
 
                     {selectedProjectId && (
@@ -354,6 +489,15 @@ function App() {
                                     {!isSidebarCollapsed && <span>{milestone.title}</span>}
                                 </div>
                             ))}
+                            {!isSidebarCollapsed && (
+                                <div 
+                                    className="nav-item text-subtle" 
+                                    style={{ marginTop: '4px', opacity: 0.7, fontSize: '12px' }}
+                                    onClick={() => { setIsCreateModalOpen('milestone'); setCreateFormData(prev => ({ ...prev, project: selectedProjectId })); }}
+                                >
+                                    <PlusIcon /> <span>Add Milestone</span>
+                                </div>
+                            )}
                         </div>
                     )}
                 </ScrollArea>
@@ -523,6 +667,14 @@ function App() {
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
+
+                        <button 
+                            className="btn btn-primary" 
+                            style={{ height: '32px', padding: '0 12px' }}
+                            onClick={() => { setIsCreateModalOpen('issue'); setCreateFormData(prev => ({ ...prev, project: selectedProjectId || '' })); }}
+                        >
+                            <PlusIcon /> {!isSidebarCollapsed && 'New Issue'}
+                        </button>
                     </div>
                     <div className="filter-results">
                         {processedIssues.length} issues
@@ -603,10 +755,24 @@ function App() {
                                     <div className="detail-actions">
                                         <span className="issue-number">#{selectedIssue.number}</span>
                                         <div className="flex items-center gap-2">
+                                            {isEditing ? (
+                                                <>
+                                                    <button className="btn btn-primary" style={{ height: '24px', fontSize: '11px', padding: '0 8px' }} onClick={handleSaveIssue}>
+                                                        <CheckIcon /> Save
+                                                    </button>
+                                                    <button className="btn" style={{ height: '24px', fontSize: '11px', padding: '0 8px' }} onClick={() => setIsEditing(false)}>
+                                                        Cancel
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <button className="btn-icon" onClick={() => { setIsEditing(true); setEditedDescription(selectedIssue.description || ''); }}>
+                                                    <Pencil1Icon />
+                                                </button>
+                                            )}
                                             <button className="btn-icon" onClick={() => setIsDetailMaximized(!isDetailMaximized)}>
                                                 {isDetailMaximized ? <ExitFullScreenIcon /> : <EnterFullScreenIcon />}
                                             </button>
-                                            <button className="btn-icon" onClick={() => { setSelectedIssue(null); setIsDetailMaximized(false); }}>
+                                            <button className="btn-icon" onClick={() => { setSelectedIssue(null); setIsDetailMaximized(false); setIsEditing(false); }}>
                                                 <Cross2Icon />
                                             </button>
                                         </div>
@@ -616,35 +782,82 @@ function App() {
                                         <div className="meta-field">
                                             <span className="meta-label">STATUS</span>
                                             <div className="meta-value">
-                                                <StatusIcon status={selectedIssue.status} size={12} />
-                                                <span className="capitalize">{selectedIssue.status}</span>
+                                                <Select 
+                                                    value={selectedIssue.status} 
+                                                    onValueChange={async (val) => {
+                                                        const [proj, num] = selectedIssue.id.split('/')
+                                                        await fetch(`/api/issues/${proj}/${num}`, {
+                                                            method: 'PATCH',
+                                                            headers: { 'Content-Type': 'application/json' },
+                                                            body: JSON.stringify({ status: val })
+                                                        })
+                                                        fetchData()
+                                                        setSelectedIssue(prev => prev ? { ...prev, status: val } : null)
+                                                    }}
+                                                >
+                                                    <SelectTrigger style={{ height: '24px', border: 'none', background: 'transparent', padding: 0 }}>
+                                                        <div className="flex items-center gap-2">
+                                                            <StatusIcon status={selectedIssue.status} size={12} />
+                                                            <span className="capitalize">{selectedIssue.status}</span>
+                                                        </div>
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {['backlog', 'todo', 'in-progress', 'completed', 'cancelled'].map(s => (
+                                                            <SelectItem key={s} value={s} className="capitalize">{s.replace('-', ' ')}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
                                             </div>
                                         </div>
                                         <div className="meta-field">
                                             <span className="meta-label">PRIORITY</span>
                                             <div className="meta-value">
-                                                <PriorityDot priority={selectedIssue.priority} />
-                                                <span className="capitalize">{selectedIssue.priority}</span>
+                                                <Select 
+                                                    value={selectedIssue.priority} 
+                                                    onValueChange={async (val) => {
+                                                        const [proj, num] = selectedIssue.id.split('/')
+                                                        await fetch(`/api/issues/${proj}/${num}`, {
+                                                            method: 'PATCH',
+                                                            headers: { 'Content-Type': 'application/json' },
+                                                            body: JSON.stringify({ priority: val })
+                                                        })
+                                                        fetchData()
+                                                        setSelectedIssue(prev => prev ? { ...prev, priority: val } : null)
+                                                    }}
+                                                >
+                                                    <SelectTrigger style={{ height: '24px', border: 'none', background: 'transparent', padding: 0 }}>
+                                                        <div className="flex items-center gap-2">
+                                                            <PriorityDot priority={selectedIssue.priority} />
+                                                            <span className="capitalize">{selectedIssue.priority}</span>
+                                                        </div>
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {['low', 'medium', 'high', 'urgent'].map(p => (
+                                                            <SelectItem key={p} value={p} className="capitalize">{p}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
                                             </div>
                                         </div>
                                     </div>
                                 </header>
                                 <div className="flex-1 overflow-y-auto">
                                     <div className="detail-body">
-                                        <div className="markdown-body">
-                                            {selectedIssue.description ? (
-                                                selectedIssue.description.split('\n').map((line: string, i: number) => {
-                                                    if (line.startsWith('# ')) return <h1 key={i}>{line.substring(2)}</h1>
-                                                    if (line.startsWith('## ')) return <h2 key={i}>{line.substring(3)}</h2>
-                                                    if (line.startsWith('### ')) return <h3 key={i}>{line.substring(4)}</h3>
-                                                    if (line.startsWith('- ')) return <li key={i}>{line.substring(2)}</li>
-                                                    if (line.trim() === '') return <br key={i} />
-                                                    return <p key={i}>{line}</p>
-                                                })
-                                            ) : (
-                                                <p style={{ fontStyle: 'italic', color: 'var(--fg-subtle)' }}>No description provided.</p>
-                                            )}
-                                        </div>
+                                        {isEditing ? (
+                                            <MarkdownEditor 
+                                                content={editedDescription} 
+                                                onChange={setEditedDescription}
+                                                placeholder="Describe the issue..."
+                                            />
+                                        ) : (
+                                            <div className="markdown-body">
+                                                {selectedIssue.description ? (
+                                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedIssue.description}</ReactMarkdown>
+                                                ) : (
+                                                    <p style={{ fontStyle: 'italic', color: 'var(--fg-subtle)' }}>No description provided.</p>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </aside>
@@ -673,10 +886,54 @@ function App() {
                                                 <h1 style={{ fontSize: '32px', fontWeight: 800, marginBottom: '8px' }}>{project.name}</h1>
                                                 <div className="flex items-center gap-4 text-sm text-subtle">
                                                     <span className="flex items-center gap-2">
-                                                        <StatusIcon status={project.status} /> {project.status}
+                                                        <Select 
+                                                            value={project.status} 
+                                                            onValueChange={async (val) => {
+                                                                await fetch(`/api/projects/${project.id}`, {
+                                                                    method: 'PATCH',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                    body: JSON.stringify({ status: val })
+                                                                })
+                                                                fetchData()
+                                                            }}
+                                                        >
+                                                            <SelectTrigger style={{ height: '24px', border: 'none', background: 'transparent', padding: 0 }}>
+                                                                <div className="flex items-center gap-2">
+                                                                    <StatusIcon status={project.status} size={12} />
+                                                                    <span className="capitalize">{project.status}</span>
+                                                                </div>
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {['backlog', 'todo', 'in-progress', 'completed', 'cancelled'].map(s => (
+                                                                    <SelectItem key={s} value={s} className="capitalize">{s.replace('-', ' ')}</SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
                                                     </span>
                                                     <span className="flex items-center gap-2">
-                                                        <PriorityDot priority={project.priority} /> {project.priority} priority
+                                                        <Select 
+                                                            value={project.priority} 
+                                                            onValueChange={async (val) => {
+                                                                await fetch(`/api/projects/${project.id}`, {
+                                                                    method: 'PATCH',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                    body: JSON.stringify({ priority: val })
+                                                                })
+                                                                fetchData()
+                                                            }}
+                                                        >
+                                                            <SelectTrigger style={{ height: '24px', border: 'none', background: 'transparent', padding: 0 }}>
+                                                                <div className="flex items-center gap-2">
+                                                                    <PriorityDot priority={project.priority} />
+                                                                    <span className="capitalize">{project.priority} priority</span>
+                                                                </div>
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {['low', 'medium', 'high', 'urgent'].map(p => (
+                                                                    <SelectItem key={p} value={p} className="capitalize">{p}</SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
                                                     </span>
                                                     <span>{projectIssues.length} issues • {projectMilestones.length} milestones</span>
                                                 </div>
@@ -692,21 +949,39 @@ function App() {
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '48px' }}>
                                             <div className="project-detail-main">
                                                 <section className="mb-8">
-                                                    <h2 className="section-title mb-4">Description</h2>
-                                                    <div className="markdown-body">
-                                                        {project.description ? (
-                                                            project.description.split('\n').map((line: string, i: number) => {
-                                                                if (line.startsWith('# ')) return <h1 key={i}>{line.substring(2)}</h1>
-                                                                if (line.startsWith('## ')) return <h2 key={i}>{line.substring(3)}</h2>
-                                                                if (line.startsWith('### ')) return <h3 key={i}>{line.substring(4)}</h3>
-                                                                if (line.startsWith('- ')) return <li key={i}>{line.substring(2)}</li>
-                                                                if (line.trim() === '') return <br key={i} />
-                                                                return <p key={i}>{line}</p>
-                                                            })
+                                                    <div className="flex justify-between items-center mb-4">
+                                                        <h2 className="section-title">Description</h2>
+                                                        {isEditing ? (
+                                                            <div className="flex gap-2">
+                                                                <button className="btn btn-primary" onClick={handleSaveProject}>
+                                                                    <CheckIcon /> Save
+                                                                </button>
+                                                                <button className="btn" onClick={() => setIsEditing(false)}>
+                                                                    Cancel
+                                                                </button>
+                                                            </div>
                                                         ) : (
-                                                            <p className="text-subtle italic">No README.md found for this project.</p>
+                                                            <button className="btn-icon" onClick={() => { setIsEditing(true); setEditedDescription(project.description || ''); }}>
+                                                                <Pencil1Icon />
+                                                                <span style={{ marginLeft: '4px', fontSize: '12px' }}>Edit</span>
+                                                            </button>
                                                         )}
                                                     </div>
+                                                    {isEditing ? (
+                                                        <MarkdownEditor 
+                                                            content={editedDescription} 
+                                                            onChange={setEditedDescription}
+                                                            placeholder="Describe the project..."
+                                                        />
+                                                    ) : (
+                                                        <div className="markdown-body">
+                                                            {project.description ? (
+                                                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{project.description}</ReactMarkdown>
+                                                            ) : (
+                                                                <p className="text-subtle italic">No README.md found for this project.</p>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </section>
 
                                                 <section className="mb-8">
@@ -936,6 +1211,171 @@ function App() {
                     </div>
                 )}
             </main>
+
+            {/* Modals */}
+            {isCreateModalOpen === 'project' && (
+                <Modal 
+                    title="Create New Project" 
+                    onConfirm={handleCreate} 
+                    onCancel={() => setIsCreateModalOpen(null)}
+                >
+                    <div className="form-group">
+                        <label className="form-label">Project Name</label>
+                        <input 
+                            className="form-input" 
+                            value={createFormData.name} 
+                            onChange={e => setCreateFormData({ ...createFormData, name: e.target.value })}
+                            placeholder="e.g. My Great Project"
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">Project ID (Optional)</label>
+                        <input 
+                            className="form-input" 
+                            value={createFormData.id} 
+                            onChange={e => setCreateFormData({ ...createFormData, id: e.target.value })}
+                            placeholder="e.g. MGP"
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">Priority</label>
+                        <Select 
+                            value={createFormData.priority} 
+                            onValueChange={val => setCreateFormData({ ...createFormData, priority: val })}
+                        >
+                            <SelectTrigger className="form-input">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {['low', 'medium', 'high', 'urgent'].map(p => (
+                                    <SelectItem key={p} value={p} className="capitalize">{p}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </Modal>
+            )}
+
+            {isCreateModalOpen === 'milestone' && (
+                <Modal 
+                    title="Add Milestone" 
+                    onConfirm={handleCreate} 
+                    onCancel={() => setIsCreateModalOpen(null)}
+                >
+                    {!selectedProjectId && (
+                        <div className="form-group">
+                            <label className="form-label">Project</label>
+                            <Select 
+                                value={createFormData.project} 
+                                onValueChange={val => setCreateFormData({ ...createFormData, project: val })}
+                            >
+                                <SelectTrigger className="form-input">
+                                    <SelectValue placeholder="Select Project" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {projects.map(p => (
+                                        <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
+                    <div className="form-group">
+                        <label className="form-label">Milestone Title</label>
+                        <input 
+                            className="form-input" 
+                            value={createFormData.title} 
+                            onChange={e => setCreateFormData({ ...createFormData, title: e.target.value })}
+                            placeholder="e.g. v1.0"
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">Target Date (YYYY-MM-DD)</label>
+                        <input 
+                            className="form-input" 
+                            type="date"
+                            value={createFormData.date} 
+                            onChange={e => setCreateFormData({ ...createFormData, date: e.target.value })}
+                        />
+                    </div>
+                </Modal>
+            )}
+
+            {isCreateModalOpen === 'issue' && (
+                <Modal 
+                    title="New Issue" 
+                    onConfirm={handleCreate} 
+                    onCancel={() => setIsCreateModalOpen(null)}
+                >
+                    <div className="form-group">
+                        <label className="form-label">Project</label>
+                        <Select 
+                            value={createFormData.project} 
+                            onValueChange={val => setCreateFormData({ ...createFormData, project: val })}
+                        >
+                            <SelectTrigger className="form-input" disabled={!!selectedProjectId}>
+                                <SelectValue placeholder="Select Project" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {projects.map(p => (
+                                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">Issue Title</label>
+                        <input 
+                            className="form-input" 
+                            value={createFormData.title} 
+                            onChange={e => setCreateFormData({ ...createFormData, title: e.target.value })}
+                            placeholder="e.g. Fix that bug"
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">Priority</label>
+                        <Select 
+                            value={createFormData.priority} 
+                            onValueChange={val => setCreateFormData({ ...createFormData, priority: val })}
+                        >
+                            <SelectTrigger className="form-input">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {['low', 'medium', 'high', 'urgent'].map(p => (
+                                    <SelectItem key={p} value={p} className="capitalize">{p}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">Milestone (Optional)</label>
+                        <Select 
+                            value={createFormData.milestone} 
+                            onValueChange={val => setCreateFormData({ ...createFormData, milestone: val })}
+                        >
+                            <SelectTrigger className="form-input">
+                                <SelectValue placeholder="None" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="_none">None</SelectItem>
+                                {milestones.filter(m => m.project === (createFormData.project || selectedProjectId)).map(m => (
+                                    <SelectItem key={m.id} value={m.title}>{m.title}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">Tags (comma separated)</label>
+                        <input 
+                            className="form-input" 
+                            value={createFormData.tags} 
+                            onChange={e => setCreateFormData({ ...createFormData, tags: e.target.value })}
+                            placeholder="e.g. bug,ui"
+                        />
+                    </div>
+                </Modal>
+            )}
         </div>
     )
 }

@@ -17,3 +17,9 @@ Cargo.lock
 # Coverage
 cobertura.xml
 tarpaulin-report.html
+
+# UI
+node_modules/
+dist/
+.env
+.env.local

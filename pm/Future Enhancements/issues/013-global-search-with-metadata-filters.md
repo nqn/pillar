@@ -1,14 +1,14 @@
 ---
 title: Global Search with Metadata Filters
 status: todo
-priority: medium
+priority: low
 project: Future Enhancements
 milestone: User Feedback Batch 1
 tags:
 - cli
 - core
 created: 2026-01-10T21:38:07.206455Z
-updated: 2026-01-10T21:38:07.206455Z
+updated: 2026-01-24T20:07:51.449241Z
 ---
 
 # Global Search with Metadata Filters
