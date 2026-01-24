@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo, Fragment } from 'react'
+import { useLocalStorage } from './hooks/useLocalStorage'
+
 import {
     ArchiveIcon,
     CalendarIcon,
@@ -100,7 +102,7 @@ const PriorityDot = ({ priority }: { priority: string }) => {
 }
 
 function App() {
-    const [theme, setTheme] = useState<'dark' | 'light'>('dark')
+    const [theme, setTheme] = useLocalStorage<'dark' | 'light'>('pillar-theme', 'dark')
     const [projects, setProjects] = useState<Project[]>([])
     const [milestones, setMilestones] = useState<Milestone[]>([])
     const [issues, setIssues] = useState<Issue[]>([])
@@ -110,27 +112,28 @@ function App() {
     const [selectedMilestoneId, setSelectedMilestoneId] = useState<string | null>(null)
     const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null)
 
-    const [statusFilter, setStatusFilter] = useState<string[]>([])
-    const [priorityFilter, setPriorityFilter] = useState<string[]>([])
+    const [statusFilter, setStatusFilter] = useLocalStorage<string[]>('pillar-status-filter', [])
+    const [priorityFilter, setPriorityFilter] = useLocalStorage<string[]>('pillar-priority-filter', [])
     const [searchTerm, setSearchTerm] = useState('')
     const [currentView, setCurrentView] = useState<'issues' | 'projects'>('issues')
-    const [isDetailMaximized, setIsDetailMaximized] = useState(false)
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
-    const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
-    const [projectViewMode, setProjectViewMode] = useState<'grid' | 'list'>('grid')
+    const [isDetailMaximized, setIsDetailMaximized] = useLocalStorage('pillar-detail-maximized', false)
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useLocalStorage('pillar-sidebar-collapsed', false)
+    const [collapsedGroupsArray, setCollapsedGroupsArray] = useLocalStorage<string[]>('pillar-collapsed-groups', [])
+    const collapsedGroups = useMemo(() => new Set(collapsedGroupsArray), [collapsedGroupsArray])
+    const [projectViewMode, setProjectViewMode] = useLocalStorage<'grid' | 'list'>('pillar-project-view-mode', 'grid')
 
     const toggleGroup = (label: string) => {
-        setCollapsedGroups(prev => {
+        setCollapsedGroupsArray(prev => {
             const next = new Set(prev)
             if (next.has(label)) next.delete(label)
             else next.add(label)
-            return next
+            return Array.from(next)
         })
     }
 
-    const [sortBy, setSortBy] = useState('number')
-    const [groupBy, setGroupBy] = useState('none')
-    const [sidebarProjectStatus, setSidebarProjectStatus] = useState<'all' | 'active' | 'completed'>('active')
+    const [sortBy, setSortBy] = useLocalStorage<string>('pillar-sort-by', 'number')
+    const [groupBy, setGroupBy] = useLocalStorage<string>('pillar-group-by', 'none')
+    const [sidebarProjectStatus, setSidebarProjectStatus] = useLocalStorage<'all' | 'active' | 'completed'>('pillar-sidebar-project-status', 'active')
 
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme)
