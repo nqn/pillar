@@ -1,7 +1,7 @@
 use crate::models::{Issue, Milestone, Project};
 use anyhow::Result;
 use axum::{
-    extract::{Path, State},
+    extract::Path,
     http::{header, StatusCode, Uri},
     response::IntoResponse,
     routing::{get, patch, post},
