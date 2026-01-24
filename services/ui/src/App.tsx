@@ -130,6 +130,7 @@ function App() {
     const [projects, setProjects] = useState<Project[]>([])
     const [milestones, setMilestones] = useState<Milestone[]>([])
     const [issues, setIssues] = useState<Issue[]>([])
+    const [workspaceName, setWorkspaceName] = useState('PILLAR')
     const [loading, setLoading] = useState(true)
 
     const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
@@ -185,6 +186,7 @@ function App() {
             setProjects(data.projects || [])
             setMilestones(data.milestones || [])
             setIssues(data.issues || [])
+            if (data.workspace_name) setWorkspaceName(data.workspace_name)
         } catch (error) {
             console.error('Failed to fetch data:', error)
         } finally {
@@ -390,7 +392,7 @@ function App() {
             {/* Sidebar */}
             <aside className="sidebar">
                 <div className="sidebar-header">
-                    <div className="logo">PILLAR</div>
+                    <div className="logo" style={{ textTransform: 'uppercase' }}>{workspaceName}</div>
                     <button
                         className="btn-icon sidebar-toggle"
                         onClick={() => setIsSidebarCollapsed(true)}

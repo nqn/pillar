@@ -40,6 +40,7 @@ struct UIIssue {
 
 #[derive(Serialize)]
 struct UIData {
+    workspace_name: String,
     projects: Vec<UIProject>,
     milestones: Vec<UIMilestone>,
     issues: Vec<UIIssue>,
@@ -329,7 +330,16 @@ fn get_ui_data() -> Result<UIData> {
         }
     }
 
+    let workspace_name = std::env::current_dir()
+        .ok()
+        .and_then(|path| {
+            path.file_name()
+                .and_then(|name| name.to_str().map(|s| s.to_string()))
+        })
+        .unwrap_or_else(|| "Pillar".to_string());
+
     Ok(UIData {
+        workspace_name,
         projects: ui_projects,
         milestones: ui_milestones,
         issues: ui_issues,
